@@ -1,0 +1,12 @@
+# Node
+node_modules
+dist
+# C++ build
+build
+# OS
+.DS_Store
+# Editor
+.vscode
+.idea
+# Docker
+*.env
