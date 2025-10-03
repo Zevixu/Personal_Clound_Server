@@ -27,4 +27,4 @@ public:
     }
 };
 
-REGISTER_HTTP_CONTROLLER(FilesCtrl);
+// REGISTER_HTTP_CONTROLLER(FilesCtrl)

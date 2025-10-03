@@ -23,5 +23,5 @@ public:
     }
 };
 
-// Register explicitly so Drogon sees it in static builds
-REGISTER_HTTP_CONTROLLER(HealthCtrl);
+// // Register explicitly so Drogon sees it in static builds
+// REGISTER_HTTP_CONTROLLER(HealthCtrl)

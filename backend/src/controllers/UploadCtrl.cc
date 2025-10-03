@@ -35,4 +35,4 @@ public:
     }
 };
 
-REGISTER_HTTP_CONTROLLER(UploadCtrl);
+// REGISTER_HTTP_CONTROLLER(UploadCtrl)

@@ -1,19 +1,31 @@
 version: "3.9"
 services:
+  # production purpose
+  # frontend:
+  #   build: ./frontend
+  #   command: npm run dev -- --host 0.0.0.0
+  #   ports: ["5173:5173"]
+  #   volumes: ["./frontend:/app"]
+  #   environment:
+  #     - VITE_API_BASE=http://localhost:8080
+  #   depends_on: [backend]
+
+  # dev purpose
   frontend:
-    build: ./frontend
-    command: npm run dev -- --host 0.0.0.0
+    image: node:20-bullseye
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    command: bash -lc "npm ci && npm run dev -- --host 0.0.0.0"
     ports: ["5173:5173"]
-    volumes: ["./frontend:/app"]
     environment:
-      - VITE_API_BASE=http://localhost:8080
+      - VITE_API_BASE=http://localhost:8080 # browser -> host-mapped backend
     depends_on: [backend]
 
   backend:
     build: ./backend
-    command: ./server
+    command: /app/server
     ports: ["8080:8080"]
-    volumes: ["./backend:/app"]
     environment:
       - DB_HOST=db
       - DB_PORT=5432
