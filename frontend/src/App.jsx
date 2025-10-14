@@ -4,8 +4,10 @@ const API = import.meta.env.VITE_API_BASE || "http://localhost:8080";
 
 export default function App() {
   const [files, setFiles] = useState([]);
-  const [selected, setSelected] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState("");
+
+  console.log(selectedFile);
 
   async function health() {
     const r = await fetch(`${API}/healthz`);
@@ -13,41 +15,54 @@ export default function App() {
   }
 
   async function startUpload() {
-    if (!selected) return;
-    const meta = {
-      name: selected.name,
-      size: selected.size,
-      contentType: selected.type || "application/octet-stream",
-      path: "/",
-      sha256: "TODO",
-    };
-    const r = await fetch(`${API}/api/uploads/start`, {
+    if (!selectedFile) return;
+    // const meta = {
+    //   name: selectedFile.name,
+    //   size: selectedFile.size,
+    //   contentType: selectedFile.type || "application/octet-stream",
+    //   path: "/",
+    //   sha256: "TODO",
+    // };
+    // const r = await fetch(`${API}/api/uploads/start`, {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(meta),
+    // });
+    // const data = await r.json();
+    // // PUT to presigned URL
+    // const put = await fetch(data.presignedUrl, {
+    //   method: "PUT",
+    //   body: selectedFile,
+    //   headers: { "Content-Type": meta.contentType },
+    // });
+    // if (!put.ok) {
+    //   alert("Upload failed");
+    //   return;
+    // }
+    // const etag = put.headers.get("ETag") || "";
+    // await fetch(`${API}/api/uploads/complete`, {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({
+    //     uploadId: data.uploadId,
+    //     s3Key: data.s3Key,
+    //     etag,
+    //   }),
+    // });
+    const form = new FormData();
+    form.append("file", selectedFile);
+    form.append("path", "/"); // optional
+    form.append("contentType", selectedFile.type || "application/octet-stream");
+    const res = await fetch(`${API}/api/uploads`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(meta),
+      body: form,
     });
-    const data = await r.json();
-    // PUT to presigned URL
-    const put = await fetch(data.presignedUrl, {
-      method: "PUT",
-      body: selected,
-      headers: { "Content-Type": meta.contentType },
-    });
-    if (!put.ok) {
-      alert("Upload failed");
-      return;
+    const jsonData = await res.json();
+    if (jsonData?.result == "success") {
+      alert("Upload success!");
+    } else {
+      alert("Upload fail!");
     }
-    const etag = put.headers.get("ETag") || "";
-    await fetch(`${API}/api/uploads/complete`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        uploadId: data.uploadId,
-        s3Key: data.s3Key,
-        etag,
-      }),
-    });
-    alert("Uploaded!");
   }
 
   async function listFiles() {
@@ -74,11 +89,11 @@ export default function App() {
       >
         <input
           type="file"
-          onChange={(e) => setSelected(e.target.files?.[0] || null)}
+          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
         />
         <button
           onClick={startUpload}
-          disabled={!selected}
+          disabled={!selectedFile}
           style={{ marginLeft: 8 }}
         >
           Upload
