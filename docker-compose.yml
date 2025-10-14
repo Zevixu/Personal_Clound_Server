@@ -34,9 +34,11 @@ services:
       - DB_PASSWORD=drive
       - S3_ENDPOINT=http://minio:9000
       - S3_BUCKET=drive
+      - S3_REGION=us-east-1
+      - S3_FORCE_PATH_STYLE=true
+      - S3_MULTIPART_PART_SIZE_MB=8
       - AWS_ACCESS_KEY_ID=minio
       - AWS_SECRET_ACCESS_KEY=miniosecret
-      - S3_FORCE_PATH_STYLE=true
     depends_on: [db, minio]
 
   db:
@@ -54,7 +56,8 @@ services:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: miniosecret
     ports: ["9000:9000", "9001:9001"]
-    volumes: ["miniodata:/data"]
+    volumes:
+      - ./minio_data:/data
 
   mc:
     image: minio/mc

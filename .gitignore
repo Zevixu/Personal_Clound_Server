@@ -10,3 +10,5 @@ build
 .idea
 # Docker
 *.env
+# minio data
+minio_data/
