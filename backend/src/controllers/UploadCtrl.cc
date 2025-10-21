@@ -7,6 +7,8 @@
 #include "../services/S3Client.h"
 #include <drogon/utils/Utilities.h>
 #include <iostream>
+#include <drogon/orm/DbClient.h>
+#include "../plugins/RepoPlugin.h"
 
 using namespace std;
 using namespace drogon;
@@ -138,15 +140,19 @@ public:
         }
         else
         {
+            // get repo plugin
+            auto repo = drogon::app().getPlugin<RepoPlugin>();
+            // insert the file into database files table
+            auto row = repo->insertFile(fName, realPath, size, key, contentType, etag); // for owner_id, use null pointer for now
 
-            // to-do : add file data to DB(owner_id, path, name, size, sha256, key, contentType)
-
-            respJson["id"] = uuid; // replace with DB id?
-            respJson["name"] = fName;
-            respJson["size"] = (Json::UInt64)size;
-            respJson["s3key"] = key;
+            respJson["id"] = row.id;
+            respJson["name"] = row.name;
+            respJson["size"] = row.size;
             // to-do add sha-256 field
-            respJson["etag"] = etag;
+            respJson["s3key"] = row.s3Key;
+            respJson["contentType"] = row.content_type;
+            respJson["etag"] = row.etag;
+            respJson["createdAt"] = row.created_at;
 
             // Clean up files in the temp folder
             error_code ec;

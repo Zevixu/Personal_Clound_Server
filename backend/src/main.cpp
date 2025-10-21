@@ -1,9 +1,17 @@
 #include <drogon/drogon.h>
 
+using namespace std;
+
 int main()
 {
     // Load config.json automatically if present
-    // drogon::app().loadConfigFile("config.json");
+    if (!filesystem::exists("/app/config.json"))
+    {
+        cerr << "[FATAL] /app/config.json not found in container\n";
+        abort();
+    }
+
+    drogon::app().loadConfigFile("/app/config.json");
 
     // Simple CORS for local dev (tighten in prod)
     drogon::app().registerPostHandlingAdvice([](const drogon::HttpRequestPtr &req, const drogon::HttpResponsePtr &resp)
@@ -15,5 +23,6 @@ int main()
 
     drogon::app().addListener("0.0.0.0", 8080);
     drogon::app().run();
+
     return 0;
 }

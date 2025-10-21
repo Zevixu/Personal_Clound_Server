@@ -68,7 +68,8 @@ export default function App() {
   async function listFiles() {
     const r = await fetch(`${API}/api/files`);
     const data = await r.json();
-    setFiles(data.files || []);
+    // setFiles(data.files || []);
+    console.log(data.files);
   }
 
   return (

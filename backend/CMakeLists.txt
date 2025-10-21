@@ -15,7 +15,7 @@ add_executable(server
   src/controllers/UploadCtrl.cc
   src/controllers/FilesCtrl.cc
   src/services/S3Client.cc
-  src/db/Repo.cc
+  src/plugins/RepoPlugin.cc
 )
 
 target_include_directories(server PRIVATE src)

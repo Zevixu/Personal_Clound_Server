@@ -10,13 +10,19 @@
     "threads_num": 4,
     "log_path": "./log"
   },
-  "plugins": [],
-  "orm": {
-    "rdbms": "postgresql",
-    "host": "db",
-    "port": 5432,
-    "dbname": "drive",
-    "user": "drive",
-    "password": "drive"
-  }
+  "plugins": [
+    { "name" : "RepoPlugin" }
+  ],
+  "db_clients": [
+    {
+      "name": "default",
+      "rdbms": "postgresql",
+      "host": "db",
+      "port": 5432,
+      "dbname": "drive",
+      "user": "drive",
+      "passwd": "drive",
+      "connection_number": 1
+    }
+  ]
 }

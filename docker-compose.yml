@@ -40,9 +40,13 @@ services:
       - AWS_ACCESS_KEY_ID=minio
       - AWS_SECRET_ACCESS_KEY=miniosecret
     depends_on: [db, minio]
+    volumes:
+      - ./backend/config.json:/app/config.json:ro
+      - ./backend/src/db/migrations:/app/db/migrations:ro
 
   db:
     image: postgres:16
+    ports: ["5432:5432"]
     environment:
       POSTGRES_DB: drive
       POSTGRES_USER: drive
@@ -56,8 +60,7 @@ services:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: miniosecret
     ports: ["9000:9000", "9001:9001"]
-    volumes:
-      - ./minio_data:/data
+    volumes: ["miniodata:/data"]
 
   mc:
     image: minio/mc
