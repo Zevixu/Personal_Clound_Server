@@ -30,7 +30,7 @@ public:
             tmp["s3Key"] = f.s3Key;
             tmp["contentType"] = f.content_type;
             tmp["etag"] = f.etag;
-            tmp["createdAt"] = f.created_at;
+            tmp["created_at"] = f.created_at;
             fileArr.append(tmp);
         }
 

@@ -152,7 +152,7 @@ public:
             respJson["s3key"] = row.s3Key;
             respJson["contentType"] = row.content_type;
             respJson["etag"] = row.etag;
-            respJson["createdAt"] = row.created_at;
+            respJson["created_at"] = row.created_at;
 
             // Clean up files in the temp folder
             error_code ec;

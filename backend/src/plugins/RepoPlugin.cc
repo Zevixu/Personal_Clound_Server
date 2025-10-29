@@ -81,7 +81,7 @@ FileRow RepoPlugin::insertFile(
     const char *query =
         "INSERT INTO files(name,path,size,s3_key,content_type,etag) "
         "VALUES($1,$2,$3,$4,$5,$6)"
-        "RETURNING id, name, path, size, s3_key, content_type, etag, to_char(created_at,'YYYY-MM-DD\"T\"HH24:MI:SSZ');";
+        "RETURNING id, name, path, size, s3_key, content_type, etag, to_char(created_at,'YYYY-MM-DD\"T\"HH24:MI:SSZ') as created_at;";
 
     auto f = m_dbclient->execSqlAsyncFuture(query, name, path, size, s3Key, contentType, etag).get();
     if (f.size() != 1)
@@ -99,7 +99,7 @@ FileRow RepoPlugin::insertFile(
     row.s3Key = r["s3_key"].as<string>();
     row.content_type = r["content_type"].as<string>();
     row.etag = r["etag"].as<string>();
-    row.created_at = r[8].as<string>();
+    row.created_at = r["created_at"].as<string>();
 
     return row;
 }
