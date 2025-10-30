@@ -11,7 +11,8 @@
     "log_path": "./log"
   },
   "plugins": [
-    { "name" : "RepoPlugin" }
+    { "name" : "RepoPlugin" },
+    { "name" : "S3ClientPlugin" }
   ],
   "db_clients": [
     {

@@ -14,8 +14,8 @@ add_executable(server
   src/controllers/HealthCtrl.cc
   src/controllers/UploadCtrl.cc
   src/controllers/FilesCtrl.cc
-  src/services/S3Client.cc
   src/plugins/RepoPlugin.cc
+  src/plugins/S3ClientPlugin.cc
 )
 
 target_include_directories(server PRIVATE src)

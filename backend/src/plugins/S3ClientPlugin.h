@@ -1,5 +1,7 @@
 // For MinIO/AWS S3, use AWS SDK for C++ initially.
 #pragma once
+#include <drogon/plugins/Plugin.h>
+#include <drogon/drogon.h>
 #include <string>
 #include <aws/s3/S3Client.h>
 #include <aws/core/Aws.h>
@@ -15,13 +17,18 @@ struct S3Config
     size_t partSizeBytes{8 * 1024 * 1024}; // 8 MB  by default
 };
 
-class S3Client
+class S3ClientPlugin : public drogon::Plugin<S3ClientPlugin>
 {
-public:
-    S3Client();
-    ~S3Client();
 
-    bool initFromEnv(); // load variables from enviroment
+public:
+    S3ClientPlugin() = default;
+
+    // initialize and start the plugin
+    void initAndStart(const Json::Value &config) override;
+
+    // shut down the plugin
+    void shutdown() override;
+
     const S3Config &conf() const { return m_conf; }
 
     // uploading small files using PutObject

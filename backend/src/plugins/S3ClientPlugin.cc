@@ -1,4 +1,4 @@
-#include "S3Client.h"
+#include "S3ClientPlugin.h"
 #include <aws/core/client/ClientConfiguration.h>
 #include <aws/s3/model/PutObjectRequest.h>
 #include <aws/s3/model/CreateMultipartUploadRequest.h>
@@ -25,21 +25,13 @@ static size_t envToSize(const char *v, size_t def)
     }
 }
 
-S3Client::S3Client()
+void S3ClientPlugin::initAndStart(const Json::Value &config)
 {
+    // Initialize aws api
     m_options.loggingOptions.logLevel = Aws::Utils::Logging::LogLevel::Warn;
     Aws::InitAPI(m_options);
-}
 
-S3Client::~S3Client()
-{
-    // destroy m_s3 before shutting down
-    m_s3.reset();
-    Aws::ShutdownAPI(m_options);
-}
-
-bool S3Client::initFromEnv()
-{
+    // Load up variables from enviroment for amazon s3 client
     const char *aep = getenv("S3_ENDPOINT");
     const char *rg = getenv("S3_REGION");
     const char *bc = getenv("S3_BUCKET");
@@ -55,14 +47,21 @@ bool S3Client::initFromEnv()
 
     if (m_conf.bucket.empty())
     {
-        return false;
+        cerr << "S3Client initialization failed -- check S3_BUCKET env variable" << endl;
     }
 
     m_s3 = makeS3Client();
-    return true;
+    cout << "S3Client initialization completed" << endl;
 }
 
-bool S3Client::putObjectFromFile(const string &key, const string &localPath, const string &contentType, string *eTagOut, string *errOut)
+void S3ClientPlugin::shutdown()
+{
+    // destroy m_s3 before shutting down
+    m_s3.reset();
+    Aws::ShutdownAPI(m_options);
+}
+
+bool S3ClientPlugin::putObjectFromFile(const string &key, const string &localPath, const string &contentType, string *eTagOut, string *errOut)
 {
     ifstream ifs(localPath, ios::binary);
     if (!ifs)
@@ -106,14 +105,14 @@ bool S3Client::putObjectFromFile(const string &key, const string &localPath, con
     return true;
 }
 
-bool S3Client::multiPartUploadFromFile(const string &key, const string &localPath, const string &contentType, string *eTagOut, string *errOut)
+bool S3ClientPlugin::multiPartUploadFromFile(const string &key, const string &localPath, const string &contentType, string *eTagOut, string *errOut)
 {
     // for large files
     cout << "DEBUG: Receiving reqeust for uploading large files..." << endl;
     return true;
 }
 
-unique_ptr<Aws::S3::S3Client> S3Client::makeS3Client()
+unique_ptr<Aws::S3::S3Client> S3ClientPlugin::makeS3Client()
 {
     Aws::Client::ClientConfiguration cfg;
     cfg.region = m_conf.region.c_str();
