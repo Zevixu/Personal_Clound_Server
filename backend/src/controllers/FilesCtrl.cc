@@ -2,6 +2,7 @@
 #include <json/value.h>
 #include <vector>
 #include "../plugins/RepoPlugin.h"
+#include "../plugins/S3ClientPlugin.h"
 
 using namespace drogon;
 
@@ -28,23 +29,49 @@ void FilesCtrl::list(const HttpRequestPtr &, std::function<void(const HttpRespon
 
     resp["files"] = fileArr;
     cb(HttpResponse::newHttpJsonResponse(resp));
-
-    // Json::Value out;
-    // Json::Value arr(Json::arrayValue);
-    // // stub
-
-    // Json::Value f;
-    // f["id"] = "1";
-    // f["name"] = "hello.txt";
-    // f["size"] = 5;
-    // arr.append(f);
-    // out["files"] = arr;
-    // cb(HttpResponse::newHttpJsonResponse(out));
 }
 
 void FilesCtrl::remove(const HttpRequestPtr &, std::function<void(const HttpResponsePtr &)> &&cb, std::string id)
 {
-    auto resp = HttpResponse::newHttpResponse();
-    resp->setStatusCode(k204NoContent);
-    cb(resp);
+    // look up db to make sure it exist before deleting
+    auto repo = drogon::app().getPlugin<RepoPlugin>();
+    FileRow deleteFile;
+    if (!repo->getFileById(id, &deleteFile))
+    {
+        // the file doesn't exist, return "not found" response directly
+        auto r = HttpResponse::newHttpResponse();
+        r->setStatusCode(k404NotFound);
+        r->setContentTypeCode(CT_TEXT_PLAIN);
+        r->setBody("file not found");
+        return cb(r);
+    }
+
+    // the file exists in the db, now delete this file from s3/minio storage
+    auto s3client = drogon::app().getPlugin<S3ClientPlugin>();
+    if (!s3client->deleteObjectFromFile(deleteFile.s3Key))
+    {
+        // if deleting file from s3/minio storage fails, return response
+        auto r = HttpResponse::newHttpResponse();
+        r->setStatusCode(k502BadGateway);
+        r->setContentTypeCode(CT_TEXT_PLAIN);
+        r->setBody("failed to delete from s3/minio storage");
+        return cb(r);
+    }
+
+    // delete file from storage success, now delete record from db
+    if (!repo->deleteFileById(id))
+    {
+        // fail to delete this record from db, return response
+        auto r = HttpResponse::newHttpResponse();
+        r->setStatusCode(k500InternalServerError);
+        r->setContentTypeCode(CT_TEXT_PLAIN);
+        r->setBody("failed to update database. Try again.");
+        return cb(r);
+    }
+
+    auto r = HttpResponse::newHttpResponse();
+    r->setStatusCode(k200OK);
+    r->setContentTypeCode(CT_TEXT_PLAIN);
+    r->setBody("delete success");
+    cb(r);
 }

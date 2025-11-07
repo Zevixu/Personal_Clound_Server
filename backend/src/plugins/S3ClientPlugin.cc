@@ -3,6 +3,7 @@
 #include <aws/s3/model/PutObjectRequest.h>
 #include <aws/s3/model/CreateMultipartUploadRequest.h>
 #include <aws/s3/model/UploadPartRequest.h>
+#include <aws/s3/model/DeleteObjectRequest.h>
 #include <aws/s3/model/CompletedMultipartUpload.h>
 #include <aws/s3/model/CompletedPart.h>
 #include <aws/s3/model/CompleteMultipartUploadRequest.h>
@@ -110,6 +111,16 @@ bool S3ClientPlugin::multiPartUploadFromFile(const string &key, const string &lo
     // for large files
     cout << "DEBUG: Receiving reqeust for uploading large files..." << endl;
     return true;
+}
+
+bool S3ClientPlugin::deleteObjectFromFile(const string &key)
+{
+    Aws::S3::Model::DeleteObjectRequest req;
+    req.SetBucket(AwsStr(m_conf.bucket.c_str()));
+    req.SetKey(AwsStr(key.c_str()));
+    auto rtn = m_s3->DeleteObject(req);
+
+    return rtn.IsSuccess();
 }
 
 unique_ptr<Aws::S3::S3Client> S3ClientPlugin::makeS3Client()

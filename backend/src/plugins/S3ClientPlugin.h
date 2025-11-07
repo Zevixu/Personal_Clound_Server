@@ -37,6 +37,9 @@ public:
     // uploading large files using multipart
     bool multiPartUploadFromFile(const string &key, const string &localPath, const string &contentType, string *eTagOut, string *errOut);
 
+    // removeing a file
+    bool deleteObjectFromFile(const string &key);
+
 private:
     S3Config m_conf;
     Aws::SDKOptions m_options;

@@ -18,8 +18,6 @@ services:
       - ./frontend:/app
     command: bash -lc "npm i && npm run dev -- --host 0.0.0.0"
     ports: ["5173:5173"]
-    environment:
-      - VITE_API_BASE=http://localhost:8080 # browser -> host-mapped backend
     depends_on: [backend]
 
   backend:

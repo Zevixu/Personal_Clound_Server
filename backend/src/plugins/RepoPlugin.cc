@@ -5,6 +5,7 @@
 
 using namespace std;
 
+/* utils */
 static string readAll(const string &path)
 {
     ifstream in(path, ios::binary);
@@ -49,6 +50,7 @@ static vector<string> splitSql(const string &sql)
         out.push_back(cur);
     return out;
 }
+/**/
 
 void RepoPlugin::initAndStart(const Json::Value &config)
 {
@@ -137,6 +139,42 @@ vector<FileRow> RepoPlugin::listFiles(const string &path, int limit)
     return out;
 }
 
+bool RepoPlugin::getFileById(const string &id, FileRow *file)
+{
+    // find the file that matches the id
+    const char *query =
+        "SELECT id, name, path, size, s3_key, content_type, etag, to_char(created_at,'YYYY-MM-DD\"T\"HH24:MI:SSZ') as created_at "
+        "FROM files WHERE id = $1::uuid;";
+
+    auto rtnArr = m_dbclient->execSqlAsyncFuture(query, id).get();
+    if (rtnArr.empty())
+    {
+        return false;
+    }
+    else
+    {
+        const auto &r = rtnArr[0];
+        file->id = r["id"].as<string>();
+        file->name = r["name"].as<string>();
+        file->path = r["path"].as<string>();
+        file->size = (uint64_t)r["size"].as<long long>();
+        file->s3Key = r["s3_key"].as<string>();
+        file->content_type = r["content_type"].as<string>();
+        file->etag = r["etag"].as<string>();
+        file->created_at = r["created_at"].as<string>();
+        return true;
+    }
+}
+
+bool RepoPlugin::deleteFileById(const string &id)
+{
+    const char *query =
+        "DELETE FROM files WHERE id = $1::uuid;";
+
+    auto rtn = m_dbclient->execSqlAsyncFuture(query, id).get();
+    return rtn.affectedRows() > 0;
+}
+
 void RepoPlugin::runMigrations()
 {
     // split the sql file into separate single statements and execuate them one by one
@@ -150,14 +188,4 @@ void RepoPlugin::runMigrations()
         txn->execSqlSync(stament);
     }
     cout << "db migration script completed" << endl;
-
-    // // Load and exec the SQL file (simple, idempotent)
-    // ifstream in("db/migrations/001_init.sql");
-    // if (!in)
-    //     cerr << "Missing db/migrations/001_init.sql" << endl;
-    // string sql((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
-
-    // cout << "ready to execuate db migration script" << endl;
-    // m_dbclient->execSqlAsyncFuture(sql).get();
-    // cout << "db migration script completed" << endl;
 }

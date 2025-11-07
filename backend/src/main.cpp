@@ -21,6 +21,8 @@ int main()
         resp->addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         resp->addHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,PUT,OPTIONS"); });
 
+    // make sure drogon backend listens on 0.0.0.0 not 127.0.0.1
+    // so that it will listen on all network interfaces, thus can be accessed from outside the container
     drogon::app().addListener("0.0.0.0", 8080);
     drogon::app().run();
 

@@ -27,12 +27,10 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 
-// Adjust these endpoints to match your Drogon backend
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8080";
-const LIST_ENDPOINT = `${API_BASE}/api/files`;
-const UPLOAD_ENDPOINT = `${API_BASE}/api/uploads`;
-const DELETE_ENDPOINT = (id) => `${API_BASE}/api/files/${id}`;
-const DOWNLOAD_ENDPOINT = (id) => `${API_BASE}/api/files/${id}/download`;
+const LIST_ENDPOINT = `/api/files`;
+const UPLOAD_ENDPOINT = `/api/uploads`;
+const DELETE_ENDPOINT = (id) => `/api/files/${id}`;
+const DOWNLOAD_ENDPOINT = (id) => `/api/files/${id}/download`;
 
 /* Utilities */
 const fmtBytes = (bytes) => {
@@ -56,7 +54,7 @@ export default function FileManager() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [snack, setSnack] = useState({ open: false, message: "" });
-  const [confirmId, setConfirmId] = useState(null);
+  const [confirmDelId, setConfirmDelId] = useState(null);
   const inputRef = useRef(null);
 
   const hasRows = useMemo(() => files && files.length > 0, [files]);
@@ -68,9 +66,8 @@ export default function FileManager() {
     try {
       const res = await fetch(LIST_ENDPOINT);
       const data = await res.json();
-      if (data?.files.length) {
-        setFiles(data.files);
-      }
+
+      setFiles(data.files);
     } catch (err) {
       console.error(err);
       showMessage("Failed to fetch files");
@@ -118,10 +115,33 @@ export default function FileManager() {
     }
   };
 
-  const confirmDelete = (id) => setConfirmId(id);
-  const cancelDelete = () => setConfirmId(null);
+  const confirmDelete = async () => {
+    if (!confirmDelId) {
+      return;
+    }
 
-  const handleDelete = async () => {
+    try {
+      const res = await fetch(DELETE_ENDPOINT(confirmDelId), {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        showMessage("file delete success");
+      } else {
+        showMessage("file delete fail, try again");
+      }
+      await fetchFiles();
+    } catch (error) {
+      console.log(error);
+      showMessage(err.message || "file delete fail, try again");
+    }
+
+    setConfirmDelId(null);
+  };
+
+  const cancelDelete = () => setConfirmDelId(null);
+
+  const handleDelete = async (id) => {
+    setConfirmDelId(id);
     // if (!confirmId) return;
     // try {
     //   const res = await fetch(DELETE_ENDPOINT(confirmId), { method: "DELETE" });
@@ -276,14 +296,14 @@ export default function FileManager() {
         </Box>
 
         {/* Delete confirmation */}
-        <Dialog open={!!confirmId} onClose={cancelDelete}>
+        <Dialog open={!!confirmDelId} onClose={cancelDelete}>
           <DialogTitle>Delete file?</DialogTitle>
           <DialogContent>
             <DialogContentText>This action cannot be undone.</DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={cancelDelete}>Cancel</Button>
-            <Button onClick={handleDelete} color="error" variant="contained">
+            <Button onClick={confirmDelete} color="error" variant="contained">
               Delete
             </Button>
           </DialogActions>

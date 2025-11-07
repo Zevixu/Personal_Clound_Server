@@ -47,6 +47,10 @@ public:
         const string &path,
         int limit = 100);
 
+    bool getFileById(const string &id, FileRow *file);
+
+    bool deleteFileById(const string &id);
+
 private:
     void runMigrations();
 
